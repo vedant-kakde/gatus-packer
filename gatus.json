@@ -1,0 +1,44 @@
+{
+  "variables": {
+    "vultr_api_key": "{{env `VULTR_API_KEY`}}",
+    "version": "{{env `VERSION`}}"
+  },
+  "sensitive-variables": ["vultr_api_key"],
+  "builders": [
+    {
+      "type": "vultr",
+      "api_key": "{{user `vultr_api_key`}}",
+      "region": "ewr",
+      "plan": "vc2-1c-1gb",
+      "os_id": "387",
+      "snapshot_description": "Gatus Monitoring Tool {{user `version`}}",
+      "state_timeout": "25m",
+      "ssh_username": "root"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "cloud-init status --wait"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "scripts/",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "chmod +x /tmp/setup.sh",
+        "chmod +x /tmp/cleanup.sh",
+        "/tmp/setup.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "script": "scripts/cleanup.sh"
+    }
+  ]
+}
